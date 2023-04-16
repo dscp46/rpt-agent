@@ -1,4 +1,4 @@
-# Repeater Remote Control Protocol (RCCP)
+# Repeater Remote Control Protocol (RRCP)
 
 ## Status of this document
 
@@ -28,20 +28,20 @@ In the following parts of this document:
   - The software that is used to send commands to control a repeater will be called a **control client**.
   - The software, to which a control client will connect to, is designated as a **message broker**.
   - A group on which multiple controlled devices connect to, with the purpose of collectively exchanging voice or data signals (A.K.A a *conference*, a *reflector*, a *room*, or a *talk group*) will be called a **module**.
-  - A **message** is a RCCP datagram exchanged by two of the following: control client, controlled device, message broker.
+  - A **message** is a RRCP datagram exchanged by two of the following: control client, controlled device, message broker.
 
 ### Cryptographic material definition
   - The **session key**, noted **Ks**, known to both by the message broker and the agent, is used to generate the Message Integrity Tag, if applicable. Details on how this message is generated will be described later in this document.
   - The **association key**, noted **Ka**, known to both by the message broker and the agent, is used to negociate a new session key during the Join procedure.
 
 ## Protocol definition
-The Repeater Remote Control Protocol (RCCP) is built on top either of the following:
+The Repeater Remote Control Protocol (RRCP) is built on top either of the following:
   - MQTT (ISO/IEC 20922:2016)
   - LoRaWAN
   - AX.25 UI Frames following the APRS standard
 
-### RCCP over MQTT
-This variant of RCCP enables the remote control of a repeater over an IP network (either over the Internet or over Hamnet).
+### RRCP over MQTT
+This variant of RRCP enables the remote control of a repeater over an IP network (either over the Internet or over Hamnet).
 
 The version of the MQTT protocol used by the agent or by a control client is not specified, and left at the discretion of the message broker's administrator.
 
@@ -91,7 +91,7 @@ ack-message      =  1*19DIGIT ; Sequence number, 1 to 19 digits integer in decim
 
 ```
 
-### RCCP over LoRaWAN
+### RRCP over LoRaWAN
 Use of this control channel is provided as a last resort solution, in case your repeater is not in reach of other infrastructure. 
 
 The controlled device MUST support **at least** class B operation.
@@ -101,7 +101,7 @@ The controlled device MUST support **at least** class B operation.
   - **Advertisements** SHALL be sent on **port 2**.
 
 #### Message format
-A RCCP over APRS message is composed as the concatenation of the following:
+A RRCP over APRS message is composed as the concatenation of the following:
   - A 1 byte **Control** (CTL) field, which represents the requested command. Value of control word is defined for each command.
   - A variable size **Arguments** (ARG) field.
     - It contains the arguments required by specific commands.
@@ -111,11 +111,11 @@ A RCCP over APRS message is composed as the concatenation of the following:
 
 This format constitutes the payload of a LoRaWAN packet regardless of its nature (command, reply, advertisement). 
 
-### RCCP over APRS
+### RRCP over APRS
 Due to the nature of APRS messages (lack of integrity protection, lack of replay resistance), a message integrity tag is appended to each message. 
 
 #### Message format
-A RCCP over APRS message is composed as the concatenation of the following:
+A RRCP over APRS message is composed as the concatenation of the following:
   - A 3 bytes **Header** of fixed value "RC!"
   - A 6 bytes **Message Sequence Number** (SEQ) field. 
     - Its content is the base64-encoded representation of a 32 bits monotonic unsigned integer sequence counter. 
