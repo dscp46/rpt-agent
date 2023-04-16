@@ -61,21 +61,35 @@ This acknowledgement SHOULD be sent after the command has been successfully exec
 
 If the agent is able to send advertisements, it sends them to the topic 'repeaters/advertise'.
 #### Command Message format
-
+There are 3 fields in a command message (the last one is optional), separated by the space character:
+  - The message Sequence number (SEQ): an unsigned integer represented in its decimal form. Valid values include any integer from 1 to 19 digits.
+  - The command (CMD)
+  - The Arguement (ARG) 
+  
 ```ABNF
-DIGIT        =  %x30-39
-SP           =  %x20
-VCHAR        =  %x21-7E
-stdchar      =  SP / VCHAR                  ; Printable characters plus space
-command      =  1*VCHAR                     ; Commands in text form
-seq          =  1*19DIGIT                   ; Sequence number
-args         =  1*35stdchar                 ; Argument(s)
-message      =  seq SP command 0*1(SP args) ; Command Message format
+DIGIT            =  %x30-39
+SP               =  %x20
+VCHAR            =  %x21-7E                  ; Printable characters
+cmd              =  1*VCHAR                  ; Commands in text form
+seq              =  1*19DIGIT                ; Sequence number, 1 to 19 digits integer in decimal form
+args             =  1*35(SP / VCHAR)         ; Argument(s), 1 to 35 printable characters plus space
+cmd-message      =  seq SP cmd [SP args]     ; Command Message format
 
 ```
 
 #### Acknowlegdement message format
+```ABNF
+DIGIT            =  %x30-39
+ack-message      =  1*19DIGIT ; Sequence number, 1 to 19 digits integer in decimal form
 
+```
+  
+#### Advertisement message format
+```ABNF
+DIGIT            =  %x30-39
+ack-message      =  1*19DIGIT ; Sequence number, 1 to 19 digits integer in decimal form
+
+```
 
 ### RCCP over LoRaWAN
 Use of this control channel is provided as a last resort solution, in case your repeater is not in reach of other infrastructure. 
