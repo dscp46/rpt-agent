@@ -172,7 +172,7 @@ The following table describes the format of responses and advertisements that ca
 
 | Reply / Advertisement                   | Control Field value | Argument(s)     |
 | --------------------------------------- | ------------------- | --------------- |
-| Acknowledgement *(response)*            | 0x20                | Sequence number |
+| Acknowledgement *(response)*            | 0x20                | Acknowledged Command Sequence number |
 | Advertise presence *(advertisement)*    | 0x21                | Timestamp, 'ADVT', Power status, Device Serial Number |
 | Report breaker trip *(advertisement)*   | 0x22                | Timestamp, 'TRIP', Breaker ID  |
 | Generator status *(advertisement)*      | 0x23                | Timestamp, 'GENS', fuel percentage, gen started?, gen lockout?, gen (temp\|fault code)  |
