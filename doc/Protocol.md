@@ -60,7 +60,21 @@ An agent SHALL NOT reply to invalid messages, or to valid messages that refer to
 This acknowledgement SHOULD be sent after the command has been successfully executed. In specific cases, such as a system reboot, the response MAY be sent prior to executing the action.
 
 If the agent is able to send advertisements, it sends them to the topic 'repeaters/advertise'.
-#### Message format
+#### Command Message format
+
+```ABNF
+DIGIT        =  %x30-39
+SP           =  %x20
+VCHAR        =  %x21-7E
+stdchar      =  SP / VCHAR                  ; Printable characters plus space
+command      =  1*VCHAR                     ; Commands in text form
+seq          =  1*19DIGIT                   ; Sequence number
+args         =  1*35stdchar                 ; Argument(s)
+message      =  seq SP command 0*1(SP args) ; Command Message format
+
+```
+
+#### Acknowlegdement message format
 
 
 ### RCCP over LoRaWAN
