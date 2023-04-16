@@ -53,25 +53,40 @@ When an agent connects to the message broker, it subscribes to the topic 'repeat
 
 When an agent receives a valid message with QoS level 2 it MUST send back an acknowledgement with QoS level 2. Acknowledgements MUST be sent to the topic 'repeaters/<callsign>/v1/response'.
 
-An agent MAY NOT reply to valid messages send with QoS level 0.
+Replies to valid, supported messages sent with QoS level 0 is OPTIONAL. The control client SHALL send a message with QoS level 2 if it expects a reply.
 
-An agent SHALL not reply to invalid messages, or to valid messages that refer to an unimplemented feature.
+An agent SHALL NOT reply to invalid messages, or to valid messages that refer to an unimplemented feature.
 
 This acknowledgement SHOULD be sent after the command has been successfully executed. In specific cases, such as a system reboot, the response MAY be sent prior to executing the action.
 
 If the agent is able to send advertisements, it sends them to the topic 'repeaters/advertise'.
+#### Message format
+
 
 ### RCCP over LoRaWAN
 Use of this control channel is provided as a last resort solution, in case your repeater is not in reach of other infrastructure. 
 
-The controlled device MUST support at least class B operation.
+The controlled device MUST support **at least** class B operation.
 
-Due to the constrained nature of this control channel, commands will be assigned a one byte value equivalent.
+  - **Commands** SHALL be sent on **port 1**.
+  - **Acknowledgements** SHALL be sent on **port 1**.
+  - **Advertisements** SHALL be sent on **port 2**.
+
+#### Message format
+A RCCP over APRS message is composed as the concatenation of the following:
+  - A 1 byte **Control** (CTL) field, which represents the requested command. Value of control word is defined for each command.
+  - A variable size **Arguments** (ARG) field.
+    - It contains the arguments required by specific commands.
+    - Its size MUST be between 0 and 35 bytes.
+    - If applicable, multiple arguments are separated by the character 0x20.
+    - Each argument byte's value MUST be more than, or equal to, 0x20, and less than, or equal to, 0x7E.
+
+This format constitutes the payload of a LoRaWAN packet regardless of its nature (command, reply, advertisement). 
 
 ### RCCP over APRS
 Due to the nature of APRS messages (lack of integrity protection, lack of replay resistance), a message integrity tag is appended to each message. 
 
-#### Frame format
+#### Message format
 A RCCP over APRS message is composed as the concatenation of the following:
   - A 3 bytes **Header** of fixed value "RC!"
   - A 6 bytes **Message Sequence Number** (SEQ) field. 
@@ -91,6 +106,8 @@ A RCCP over APRS message is composed as the concatenation of the following:
     - The trailing '==' of the base64 value MUST be stripped during encapsulation, and MUST be appended locally during decapsulation.
     - The 128 bits message integrity tag is the result of computing the AES-CMAC value of the preceding fields. 
     - The SEQ field is encoded in its 6 bytes base64 form prior to performing this operation.
+  
+This format constitutes the payload of an APRS packet regardless of its nature (command, reply, advertisement). 
 
 ## Commands
 
@@ -114,15 +131,6 @@ The following table describes the format of commands that can be sent by a contr
 | Update agent                            | 0x46 | update       | Source Url     |
 | Start generator                         | 0x50 | genstart     | *No Argument*  |
 | Stop generator                          | 0x51 | genstop      | *No Argument*  |
-
-The following table describes the format of responses and advertisements that can be sent by an agent.
-
-| Reply / Advertisement                   | Control Field value | Argument(s)     |
-| --------------------------------------- | ------------------- | --------------- |
-| Acknowledgement *(response)*            | 0x20                | Sequence number |
-| Advertise presence *(advertisement)*    | 0x21                | Sequence number, 'ADVT', Power status, Device Serial Number |
-| Report breaker trip *(advertisement)*   | 0x22                | Sequence number, 'TRIP', Breaker ID  |
-| Generator status *(advertisement)*      | 0x23                | Sequence number, 'GENS', fuel percentage, gen started?, gen lockout?, gen (temp\|fault code)  |
 
 ### Ping
 
@@ -157,3 +165,14 @@ Support for the following commands MUST be implemented by all implementations of
   - Reboot controlled device
 
 Support of other command is OPTIONAL, and at the controlled device implementer's discretion.
+  
+## Replies, Advertisements
+  
+The following table describes the format of responses and advertisements that can be sent by an agent.
+
+| Reply / Advertisement                   | Control Field value | Argument(s)     |
+| --------------------------------------- | ------------------- | --------------- |
+| Acknowledgement *(response)*            | 0x20                | Sequence number |
+| Advertise presence *(advertisement)*    | 0x21                | Timestamp, 'ADVT', Power status, Device Serial Number |
+| Report breaker trip *(advertisement)*   | 0x22                | Timestamp, 'TRIP', Breaker ID  |
+| Generator status *(advertisement)*      | 0x23                | Timestamp, 'GENS', fuel percentage, gen started?, gen lockout?, gen (temp\|fault code)  |
