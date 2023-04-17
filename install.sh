@@ -5,6 +5,7 @@ if [ ! -d "$INST_DIR" ]; then
 	cp rpt-agent.py "$INST_DIR"
 	cp rpt-agent /etc/default/rpt-agent
 	cp rpt-agent.service /etc/systemd/system/
+	chmod -x "$INST_DIR/rpt-agent.py"
 	systemctl daemon-reload
 	systemctl enable rpt-agent
 fi
