@@ -9,7 +9,7 @@ Type=simple
 Restart=on-failure
 RestartSec=30s
 EnvironmentFile=-/etc/default/rpt-agent
-ExecStart=/usr/local/src/rpt-agent.py -vc $CALLSIGN -b $SERVER -u $CALLSIGN -s $PASSWORD
+ExecStart=/usr/local/src/rpt-agent/rpt-agent.py -vc $CALLSIGN -b $SERVER -u $CALLSIGN -s $PASSWORD
 
 [Install]
 WantedBy=multi-user.target
