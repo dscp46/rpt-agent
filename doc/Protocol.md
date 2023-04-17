@@ -44,10 +44,12 @@ The Repeater Remote Control Protocol (RRCP) is built on top either of the follow
 This variant of RRCP enables the remote control of a repeater over an IP network (either over Hamnet or over the Internet).
 
 The MQTT protocol version used by an agent or a control client is not specified, and left at the discretion of the message broker's administrator.
+  
+The MQTT username, noted `<callsign>` in this document, SHOULD be the lowercase alphanumerical form, plus dash and underscore of the repeater callsign. The underscore is used to replace the slash character in a callsign. As an example, `F8KLY/P-S` used for a portable simplex hotspot by F8KLY, will be encoded as `f8kly_p-s`.
 
-When an agent connects to the message broker, it subscribes to the topic 'repeaters/<callsign>/v1' for QoS level 0 and 2, then listens for incoming messages.
+When an agent connects to the message broker, it subscribes to the topic `repeaters/<callsign>/v1` for QoS level 0 and 2, then listens for incoming messages.
 
-When an agent receives a valid message with QoS level 2 it MUST send back an acknowledgement with QoS level 2. Acknowledgements MUST be sent to the topic 'repeaters/<callsign>/v1/response'.
+When an agent receives a valid message with QoS level 2 it MUST send back an acknowledgement with QoS level 2. Acknowledgements MUST be sent to the topic `repeaters/<callsign>/v1/response`.
 
 Replies to valid, supported messages sent with QoS level 0 is OPTIONAL. The control client SHALL send a message with QoS level 2 if it expects a reply.
 
@@ -55,7 +57,8 @@ An agent SHALL NOT reply to invalid messages, or to valid messages that refer to
 
 This acknowledgement SHOULD be sent after the command has been successfully executed. In specific cases, such as a system reboot, the response MAY be sent prior to executing the action.
 
-If the agent is able to send advertisements, it sends them to the topic 'repeaters/advertise'.
+If the agent is able to send advertisements, it MUST send them to the topic `repeaters/<callsign>/v1/advertise`. A control client SHOULD subscribe to `repeaters/+/v1/advertise` to get a realtime overview of the repeaters he's got in sight.
+
 #### Command Message format
 There are 3 fields in a command message (the last one is optional), separated by the space character:
   - The message Sequence number (SEQ): an unsigned integer represented in its decimal form. Valid values include any integer from 1 to 19 digits.
@@ -95,8 +98,6 @@ args             =  1*35(SP / VCHAR)         ; Argument(s), 1 to 35 printable ch
 Message Integrity Protection is not considered for this underlaying protocol. If integrity is required, it SHALL be provided by an underlaying protocol (for example, TLS or IPSec, with NULL encryption if mandated by your local regulation). 
 
 The MQTT message broker SHOULD be set up to enforce authentication and access control. 
-
-The username, noted `<callsign>` in this document, SHOULD be the lowercase alphanumerical form, plus dash and underscore of the repeater callsign. The underscore is used to replace the slash character in a callsign. As an example, `F8KLY/P-S` used for a portable simplex hotspot by F8KLY, will be encoded as `f8kly_p-s`.
 
 Basic roles are suggested as follow:
   - The agent role SHOULD enable subscription to `repeaters/<callsign>/v1` and let an agent publish to `repeaters/<callsign>/v1/response` and `repeaters/<callsign>/v1/advertise.
@@ -212,6 +213,6 @@ The following table describes the format of responses and advertisements that ca
 | Reply / Advertisement                   | Control Field value | Text form |  Argument(s)     |
 | --------------------------------------- | ------------------- | --------- | ---------------- |
 | Acknowledgement *(response)*            | 0x20                | *(empty)* | Acknowledged Command Sequence number |
-| Advertise presence *(advertisement)*    | 0x21                | 'ADVT'    | Timestamp, , Power status, Device Serial Number |
+| Advertise presence *(advertisement)*    | 0x21                | 'ADVT'    | Timestamp, Power status, Device Serial Number, beaconing interval |
 | Report breaker trip *(advertisement)*   | 0x22                | 'TRIP'    | Timestamp, Breaker ID  |
 | Generator status *(advertisement)*      | 0x23                | 'GENS'    | Timestamp, fuel percentage, gen started?, gen lockout?, gen (temp\|fault code)  |
