@@ -8,7 +8,7 @@ This memo is currently a DRAFT. Its content SHALL NOT be interpreted as informat
 
 ## Abstract
 
-This document describes RRCP, a protocol designed to control, monitor, and provision amateur radio repeaters.
+This document describes RRCP, a protocol designed to control, monitor, and to trigger provisioning of amateur radio repeaters.
 
 ## Rationale
 
@@ -41,13 +41,9 @@ The Repeater Remote Control Protocol (RRCP) is built on top either of the follow
   - AX.25 UI Frames following the APRS standard
 
 ### RRCP over MQTT
-This variant of RRCP enables the remote control of a repeater over an IP network (either over the Internet or over Hamnet).
+This variant of RRCP enables the remote control of a repeater over an IP network (either over Hamnet or over the Internet).
 
-The version of the MQTT protocol used by the agent or by a control client is not specified, and left at the discretion of the message broker's administrator.
-
-Message Integrity Protection is not considered for this underlaying protocol. 
-
-If integrity is required, it SHALL be provided by an underlaying protocol (for example, TLS or IPSec, with NULL encryption if mandated by your local regulation). 
+The MQTT protocol version used by an agent or a control client is not specified, and left at the discretion of the message broker's administrator.
 
 When an agent connects to the message broker, it subscribes to the topic 'repeaters/<callsign>/v1' for QoS level 0 and 2, then listens for incoming messages.
 
@@ -87,9 +83,24 @@ ack-message      =  1*19DIGIT ; Sequence number, 1 to 19 digits integer in decim
 #### Advertisement message format
 ```ABNF
 DIGIT            =  %x30-39
-ack-message      =  1*19DIGIT ; Sequence number, 1 to 19 digits integer in decimal form
+SP               =  %x20
+VCHAR            =  %x21-7E                  ; Printable characters
+timestamp        =  1*19DIGIT                ; Timestamp, preferably of form YYYYMMDDhhmmss[fff]
+type             =  4VCHAR                   ; Advertisement type
+args             =  1*35(SP / VCHAR)         ; Argument(s), 1 to 35 printable characters plus space
 
 ```
+  
+#### Security considerations
+Message Integrity Protection is not considered for this underlaying protocol. If integrity is required, it SHALL be provided by an underlaying protocol (for example, TLS or IPSec, with NULL encryption if mandated by your local regulation). 
+
+The MQTT message broker SHOULD be set up to enforce authentication and access control. 
+
+The username, noted `<callsign>` in this document, SHOULD be the lowercase alphanumerical form, plus dash and underscore of the repeater callsign. The underscore is used to replace the slash character in a callsign. As an example, `F8KLY/P-S` used for a portable simplex hotspot by F8KLY, will be encoded as `f8kly_p-s`.
+
+Basic roles are suggested as follow:
+  - The agent role SHOULD enable subscription to `repeaters/<callsign>/v1` and let an agent publish to `repeaters/<callsign>/v1/response` and `repeaters/<callsign>/v1/advertise.
+  - The control client role SHOULD enable subscription to `repeaters/+/v1/response` and `repeaters/+/v1/advertise` and let a control client post on `repeaters/+/v1`. More granular roles MAY be implemented to fine tune access rules to repeater administrators. 
 
 ### RRCP over LoRaWAN
 Use of this control channel is provided as a last resort solution, in case your repeater is not in reach of other infrastructure. 
@@ -198,9 +209,9 @@ Support of other command is OPTIONAL, and at the controlled device implementer's
   
 The following table describes the format of responses and advertisements that can be sent by an agent.
 
-| Reply / Advertisement                   | Control Field value | Argument(s)     |
-| --------------------------------------- | ------------------- | --------------- |
-| Acknowledgement *(response)*            | 0x20                | Acknowledged Command Sequence number |
-| Advertise presence *(advertisement)*    | 0x21                | Timestamp, 'ADVT', Power status, Device Serial Number |
-| Report breaker trip *(advertisement)*   | 0x22                | Timestamp, 'TRIP', Breaker ID  |
-| Generator status *(advertisement)*      | 0x23                | Timestamp, 'GENS', fuel percentage, gen started?, gen lockout?, gen (temp\|fault code)  |
+| Reply / Advertisement                   | Control Field value | Text form |  Argument(s)     |
+| --------------------------------------- | ------------------- | --------- | ---------------- |
+| Acknowledgement *(response)*            | 0x20                | *(empty)* | Acknowledged Command Sequence number |
+| Advertise presence *(advertisement)*    | 0x21                | 'ADVT'    | Timestamp, , Power status, Device Serial Number |
+| Report breaker trip *(advertisement)*   | 0x22                | 'TRIP'    | Timestamp, Breaker ID  |
+| Generator status *(advertisement)*      | 0x23                | 'GENS'    | Timestamp, fuel percentage, gen started?, gen lockout?, gen (temp\|fault code)  |
