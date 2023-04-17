@@ -1,0 +1,15 @@
+[Unit]
+Description=Repeater Remote Control Agent
+After=network-online.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=30s
+EnvironmentFile=-/etc/default/rpt-agent
+ExecStart=/usr/local/src/rpt-agent.py -vc $CALLSIGN -b $SERVER -u $CALLSIGN -s $PASSWORD
+
+[Install]
+WantedBy=multi-user.target
