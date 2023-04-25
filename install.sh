@@ -8,4 +8,5 @@ if [ ! -d "$INST_DIR" ]; then
 	chmod -x "$INST_DIR/rpt-agent.py"
 	systemctl daemon-reload
 	systemctl enable rpt-agent
+	systemctl start rpt-agent
 fi
